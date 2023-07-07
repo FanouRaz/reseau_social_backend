@@ -34,4 +34,13 @@ public class UserService {
     public User createUser(User user) throws MethodArgumentNotValidException{
        return userRepository.save(user);
     }
+
+    public User updatUser(long id, User user) throws MethodArgumentNotValidException,EntityNotFoundException{
+        User current = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("L'utilisateur ayant pour id "+id+" est introuvable"));
+        current.setUsername(user.getUsername());
+        current.setEmail(user.getEmail());
+        current.setPhoneNumber(user.getPhoneNumber());
+        current.setBirthday(user.getBirthday());
+        return userRepository.save(current);    
+    }
 }
