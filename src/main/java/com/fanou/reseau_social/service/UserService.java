@@ -11,6 +11,7 @@ import com.fanou.reseau_social.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.User;
 
 @Service
@@ -27,7 +28,7 @@ public class UserService {
     }
 
     public void deleteUser(long id) throws EntityNotFoundException{
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("L'utilisateur ayant pour id "+id+" est introuvable"));
+        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         userRepository.delete(user);       
     }
 
@@ -36,11 +37,16 @@ public class UserService {
     }
 
     public User updatUser(long id, User user) throws MethodArgumentNotValidException,EntityNotFoundException{
-        User current = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("L'utilisateur ayant pour id "+id+" est introuvable"));
+        User current = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
         current.setUsername(user.getUsername());
         current.setEmail(user.getEmail());
         current.setPhoneNumber(user.getPhoneNumber());
         current.setBirthday(user.getBirthday());
         return userRepository.save(current);    
+    }
+
+    public List<Publication> getUserPublications(long id) throws EntityNotFoundException{
+        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        return user.getPublications();
     }
 }

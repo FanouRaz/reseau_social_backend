@@ -6,6 +6,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
@@ -23,7 +25,14 @@ public class Publication {
     @GeneratedValue(strategy=GenerationType.AUTO)
     private long id_publication;
     private String text;
+    @ManyToOne(targetEntity = User.class)
+    private User user;
     
     @Temporal(TemporalType.DATE)
     private Date datePublication;
+
+    @PrePersist
+    public void setDefaultDatePublication() {
+        if (datePublication == null) datePublication = new Date();
+    }
 }

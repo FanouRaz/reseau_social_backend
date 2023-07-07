@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.service.UserService;
+import com.fanou.reseau_social.model.Publication;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -61,7 +62,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("api/updateUser/{id}")
+    @PutMapping("/api/updateUser/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") Long id, @RequestBody User user) {
         try {
             User updatedUser = userService.updatUser(id, user);
@@ -72,6 +73,16 @@ public class UserController {
             return ResponseEntity.badRequest().build();
         } catch (MethodArgumentNotValidException e){
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/api/publications/{id_utilisateur}")
+    public ResponseEntity<List<Publication>> getUserPublications(@PathVariable("id_utilisateur") long id){
+        try{
+            List<Publication> publications = userService.getUserPublications(id); 
+            return ResponseEntity.ok(publications);     
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
         }
     }
 }
