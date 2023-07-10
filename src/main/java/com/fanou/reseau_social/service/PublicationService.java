@@ -1,6 +1,7 @@
 package com.fanou.reseau_social.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.fanou.reseau_social.repository.PublicationRepository;
@@ -13,6 +14,7 @@ import com.fanou.reseau_social.model.User;
 
 import java.util.List;
 
+@Service
 public class PublicationService {
     @Autowired
     private PublicationRepository publicationRepository;
@@ -33,6 +35,7 @@ public class PublicationService {
     public void deletePublication(long id) throws EntityNotFoundException{
         Publication publicationToErase = publicationRepository.findById(id)
                                                    .orElseThrow(EntityNotFoundException::new);
+                                                   
         //récuperation de l'utilisateur ayant :publier la publication à effacer                                   
         User user = publicationToErase.getUser();
         
@@ -46,9 +49,20 @@ public class PublicationService {
         User user = userRepository.findById(id_user)
                                   .orElseThrow(EntityNotFoundException::new);
         
-        user.addPublication(publication);
-        userRepository.save(user);
 
-        return publicationRepository.save(publication);
+        user.addPublication(publication);
+
+        publicationRepository.save(publication);
+        userRepository.save(user);
+        
+        System.out.println("Heree!");
+        return publication;
+    }
+
+    public Publication updatePublication(long id, Publication publication)throws MethodArgumentNotValidException,EntityNotFoundException{
+        Publication current = publicationRepository.findById(id)
+                                                   .orElseThrow(EntityNotFoundException::new);
+        current.setText(publication.getText());
+        return publicationRepository.save(current);    
     }
 }

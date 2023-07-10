@@ -3,6 +3,8 @@ package com.fanou.reseau_social.model;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,6 +30,8 @@ public class User{
     private String username;
     private String email;
     private String phoneNumber;
+
+    @JsonIgnore
     private String password;
 
     @Temporal(TemporalType.DATE)
