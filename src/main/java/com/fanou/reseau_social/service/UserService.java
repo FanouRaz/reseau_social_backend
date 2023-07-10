@@ -1,7 +1,6 @@
 package com.fanou.reseau_social.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
@@ -19,16 +18,20 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     
+
     public List<User> getUsers(){
         return userRepository.findAll();    
     }    
 
     public User getUserById(long id) throws EntityNotFoundException{
-        return userRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("L'utilisateur ayant pour id "+id+" est introuvable"));
+        return userRepository.findById(id)
+                             .orElseThrow(EntityNotFoundException::new);
     }
 
     public void deleteUser(long id) throws EntityNotFoundException{
-        User user = userRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        User user = userRepository.findById(id)
+                                  .orElseThrow(EntityNotFoundException::new);
+                                  
         userRepository.delete(user);       
     }
 

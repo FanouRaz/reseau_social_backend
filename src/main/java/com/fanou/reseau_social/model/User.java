@@ -40,6 +40,8 @@ public class User{
     @OneToMany(targetEntity = Publication.class, cascade= CascadeType.REMOVE)
     private List<Publication> publications;
 
+    private String profilePicture;
+    
     public void addPublication(Publication publication){
         publications.add(publication);
         publication.setUser(this);

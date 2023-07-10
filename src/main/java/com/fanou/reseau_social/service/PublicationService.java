@@ -55,7 +55,6 @@ public class PublicationService {
         publicationRepository.save(publication);
         userRepository.save(user);
         
-        System.out.println("Heree!");
         return publication;
     }
 
