@@ -63,6 +63,7 @@ public class UserService {
                                   .orElseThrow(EntityNotFoundException::new);
       
         return user.getPublications();
+    }
 
     public void uploadProfilePicture(long id, MultipartFile file) throws EntityNotFoundException,IOException,MethodArgumentNotValidException{
         User user = userRepository.findById(id)

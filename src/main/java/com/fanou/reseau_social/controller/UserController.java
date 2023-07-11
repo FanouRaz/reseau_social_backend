@@ -86,6 +86,8 @@ public class UserController {
             return ResponseEntity.ok(publications);     
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
+        }
+    }
           
     @PostMapping("/api/user/uploadProfilePicture/{id_user}")
     public ResponseEntity<String> uploadProfilePicture(@PathVariable("id_user") long id, @RequestParam("file") MultipartFile file){
