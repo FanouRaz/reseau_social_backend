@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.service.UserService;
+import com.fanou.reseau_social.model.Publication;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -79,6 +80,14 @@ public class UserController {
         }
     }
 
+    @GetMapping("/api/publications/{id_utilisateur}")
+    public ResponseEntity<List<Publication>> getUserPublications(@PathVariable("id_utilisateur") long id){
+        try{
+            List<Publication> publications = userService.getUserPublications(id); 
+            return ResponseEntity.ok(publications);     
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+          
     @PostMapping("/api/user/uploadProfilePicture/{id_user}")
     public ResponseEntity<String> uploadProfilePicture(@PathVariable("id_user") long id, @RequestParam("file") MultipartFile file){
         try{

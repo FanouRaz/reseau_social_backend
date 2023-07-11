@@ -15,6 +15,7 @@ import com.fanou.reseau_social.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.User;
 
 @Service
@@ -22,6 +23,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     
+
     public List<User> getUsers(){
         return userRepository.findAll();    
     }    
@@ -34,13 +36,14 @@ public class UserService {
     public void deleteUser(long id) throws EntityNotFoundException{
         User user = userRepository.findById(id)
                                   .orElseThrow(EntityNotFoundException::new);
-        
+ 
         userRepository.delete(user);       
     }
 
     public User createUser(User user) throws MethodArgumentNotValidException{
        return userRepository.save(user);
     }
+
 
     public User updateUser(long id, User user) throws MethodArgumentNotValidException,EntityNotFoundException{
         User current = userRepository.findById(id)
@@ -53,6 +56,13 @@ public class UserService {
         current.setProfilePicture(user.getProfilePicture());
         return userRepository.save(current);    
     }
+
+
+    public List<Publication> getUserPublications(long id) throws EntityNotFoundException{
+        User user = userRepository.findById(id)
+                                  .orElseThrow(EntityNotFoundException::new);
+      
+        return user.getPublications();
 
     public void uploadProfilePicture(long id, MultipartFile file) throws EntityNotFoundException,IOException,MethodArgumentNotValidException{
         User user = userRepository.findById(id)
