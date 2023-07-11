@@ -37,10 +37,11 @@ public class User{
     @Temporal(TemporalType.DATE)
     private Date birthday;
 
+
     @OneToMany(targetEntity = Publication.class, cascade= CascadeType.REMOVE)
     private List<Publication> publications;
-
-    private String profilePicture;
+  
+    private String profilePicture = "uploads/users/user_placeholder.png";
     
     public void addPublication(Publication publication){
         publications.add(publication);
