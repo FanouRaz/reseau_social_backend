@@ -1,10 +1,14 @@
 package com.fanou.reseau_social.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import com.fanou.reseau_social.repository.UserRepository;
@@ -23,11 +27,14 @@ public class UserService {
     }    
 
     public User getUserById(long id) throws EntityNotFoundException{
-        return userRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("L'utilisateur ayant pour id "+id+" est introuvable"));
+        return userRepository.findById(id)
+                             .orElseThrow(EntityNotFoundException::new);
     }
 
     public void deleteUser(long id) throws EntityNotFoundException{
-        User user = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("L'utilisateur ayant pour id "+id+" est introuvable"));
+        User user = userRepository.findById(id)
+                                  .orElseThrow(EntityNotFoundException::new);
+        
         userRepository.delete(user);       
     }
 
@@ -35,12 +42,32 @@ public class UserService {
        return userRepository.save(user);
     }
 
-    public User updatUser(long id, User user) throws MethodArgumentNotValidException,EntityNotFoundException{
-        User current = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("L'utilisateur ayant pour id "+id+" est introuvable"));
+    public User updateUser(long id, User user) throws MethodArgumentNotValidException,EntityNotFoundException{
+        User current = userRepository.findById(id)
+                                     .orElseThrow(EntityNotFoundException::new);
+
         current.setUsername(user.getUsername());
         current.setEmail(user.getEmail());
         current.setPhoneNumber(user.getPhoneNumber());
         current.setBirthday(user.getBirthday());
+        current.setProfilePicture(user.getProfilePicture());
         return userRepository.save(current);    
+    }
+
+    public void uploadProfilePicture(long id, MultipartFile file) throws EntityNotFoundException,IOException,MethodArgumentNotValidException{
+        User user = userRepository.findById(id)
+                                  .orElseThrow(EntityNotFoundException::new);
+        
+        if(!file.isEmpty()){
+            byte[] bytes = file.getBytes();
+            Path path = Paths.get("uploads/users/" + file.getOriginalFilename());
+            Path oldPicture = Paths.get(user.getProfilePicture());
+            
+            if(!(user.getProfilePicture()).equals("uploads/users/user_placeholder.png")) Files.delete(oldPicture);
+        
+            Files.write(path, bytes);
+            user.setProfilePicture(path.toString());
+            updateUser(id, user);
+        }
     }
 }

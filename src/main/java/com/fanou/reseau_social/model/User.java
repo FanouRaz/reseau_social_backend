@@ -30,5 +30,6 @@ public class User{
     @Temporal(TemporalType.DATE)
     @Nullable
     private Date birthday;
-
+   
+    private String profilePicture = "uploads/users/user_placeholder.png";
 }
