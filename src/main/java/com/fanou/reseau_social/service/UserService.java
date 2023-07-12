@@ -33,10 +33,15 @@ public class UserService {
                              .orElseThrow(EntityNotFoundException::new);
     }
 
-    public void deleteUser(long id) throws EntityNotFoundException{
+    public void deleteUser(long id) throws EntityNotFoundException, IOException{
         User user = userRepository.findById(id)
                                   .orElseThrow(EntityNotFoundException::new);
- 
+        
+        Path imgPath = Paths.get(user.getProfilePicture());
+
+        //Suppression de la photo de profil de l'utilisateur si sa photo est différent de la photo par défaut
+        if(!(user.getProfilePicture()).equals("uploads/users/user_placeholder.png")) Files.delete(imgPath);
+        
         userRepository.delete(user);       
     }
 
@@ -74,6 +79,7 @@ public class UserService {
             Path path = Paths.get("uploads/users/" + file.getOriginalFilename());
             Path oldPicture = Paths.get(user.getProfilePicture());
             
+            //Suppression de la photo de profil de l'utilisateur si sa photo est différent de la photo par défaut
             if(!(user.getProfilePicture()).equals("uploads/users/user_placeholder.png")) Files.delete(oldPicture);
         
             Files.write(path, bytes);

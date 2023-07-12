@@ -52,6 +52,8 @@ public class UserController {
             return ResponseEntity.ok("User deleted successfully");
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
+        }catch(IOException e){
+            return ResponseEntity.internalServerError().build();
         }
     }
 

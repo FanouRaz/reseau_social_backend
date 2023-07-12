@@ -4,6 +4,7 @@ import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -29,7 +30,7 @@ public class Publication{
     private String text;
 
     @JsonIgnore
-    @ManyToOne(targetEntity = User.class)
+    @ManyToOne(targetEntity = User.class,cascade = CascadeType.REMOVE)
     private User user;
     
 
