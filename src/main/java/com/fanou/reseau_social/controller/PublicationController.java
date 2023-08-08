@@ -19,6 +19,8 @@ import com.fanou.reseau_social.service.PublicationService;
 import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Publication;
+import com.fanou.reseau_social.model.ReactionPublication;
+import com.fanou.reseau_social.model.User;
 
 @RestController
 public class PublicationController {
@@ -78,4 +80,36 @@ public class PublicationController {
             return ResponseEntity.badRequest().build();
         }
     }
-}
+
+    @GetMapping("/api/publication/reactions/{id}")
+    public ResponseEntity<List<ReactionPublication>> getReactor(@PathVariable("id") long id){
+        try{
+            List<ReactionPublication> reactors = publicationService.getReactor(id);
+            return ResponseEntity.ok(reactors);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/api/publication/reactions/{id_publication}/{type}")
+    public ResponseEntity<List<User>> getReactorByTypeOfReaction(@PathVariable("id_publication") long id,@PathVariable("type") String type){
+        try{
+            List<User> reactors = publicationService.getReactorByType(id, type);
+            return ResponseEntity.ok(reactors);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/api/publication/reaction/{id_user}/{id_publication}")
+    public ResponseEntity<ReactionPublication> updateReaction(@PathVariable("id_user") long id_user,@PathVariable("id_publication") long id_publication,@RequestBody ReactionPublication react){
+        try{
+            ReactionPublication updated = publicationService.updateReaction(id_user,id_publication, react); 
+            return ResponseEntity.ok(updated);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(MethodArgumentNotValidException e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+} 

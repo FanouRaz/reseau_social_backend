@@ -5,13 +5,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.fanou.reseau_social.repository.PublicationRepository;
+import com.fanou.reseau_social.repository.ReactionPublicationRepository;
 import com.fanou.reseau_social.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Publication;
+import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,6 +23,8 @@ public class PublicationService {
     private PublicationRepository publicationRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ReactionPublicationRepository reactionRepository;
 
     public List<Publication> getPublications(){
         return publicationRepository.findAll();
@@ -64,4 +69,34 @@ public class PublicationService {
         current.setText(publication.getText());
         return publicationRepository.save(current);    
     }
+
+    //Reactions
+    public List<User> getReactorByType(long id,String type) throws EntityNotFoundException{
+        Publication publication = publicationRepository.findById(id)
+                                                       .orElseThrow(EntityNotFoundException::new);
+        
+        
+        List<User> reactors = new ArrayList<>();
+
+        for(ReactionPublication reaction : publication.getReactions())
+            if(reaction.getReaction().equals(type)) reactors.add(reaction.getUser());
+        
+        return reactors;
+    }
+
+    public List<ReactionPublication> getReactor(long id) throws EntityNotFoundException{
+        Publication publication = publicationRepository.findById(id)
+                                                       .orElseThrow(EntityNotFoundException::new);
+        
+        return publication.getReactions();
+    }
+
+    public ReactionPublication updateReaction(long id_user,long id_publication, ReactionPublication reaction)throws MethodArgumentNotValidException,EntityNotFoundException{
+        ReactionPublication current =  reactionRepository.findByUser_IdUserAndPublication_IdPublication(id_user,id_publication)
+                                                         .orElseThrow(EntityNotFoundException::new);
+                                                   
+        current.setReaction(reaction.getReaction());
+        return reactionRepository.save(current);    
+    }
 }
+

@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.service.UserService;
 import com.fanou.reseau_social.model.Publication;
+import com.fanou.reseau_social.model.ReactionPublication;
 
 import jakarta.persistence.EntityNotFoundException;
 
@@ -102,6 +103,28 @@ public class UserController {
             return ResponseEntity.internalServerError().build();
         }catch(MethodArgumentNotValidException e){
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/api/react/{id_user}/{id_publication}")
+    public ResponseEntity<String> reactPublication(@PathVariable("id_user") long id_user,@PathVariable("id_publication") long id_publication, @RequestBody ReactionPublication reaction){
+        try{
+            userService.reactPublication(id_user, id_publication, reaction);
+            return ResponseEntity.ok().build();
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(MethodArgumentNotValidException e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/api/react/{id_user}/{id_publication}")
+    public ResponseEntity<String> removeReaction(@PathVariable("id_user") long id_user,@PathVariable("id_publication") long id_publication){
+        try{
+            userService.removeReaction(id_user, id_publication);
+            return ResponseEntity.ok("Reaction removed successfully");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
         }
     }
 }

@@ -11,11 +11,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import com.fanou.reseau_social.repository.PublicationRepository;
+import com.fanou.reseau_social.repository.ReactionPublicationRepository;
 import com.fanou.reseau_social.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Publication;
+import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
 
 @Service
@@ -23,7 +26,12 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     
+    @Autowired
+    private ReactionPublicationRepository reactionPublicationRepository;
 
+    @Autowired
+    private PublicationRepository publicationRepository;
+    
     public List<User> getUsers(){
         return userRepository.findAll();    
     }    
@@ -86,5 +94,49 @@ public class UserService {
             user.setProfilePicture(path.toString());
             updateUser(id, user);
         }
+    }
+
+    //Reactions Publication
+    public ReactionPublication reactPublication(long id_user, long id_publication, ReactionPublication reaction) throws EntityNotFoundException, MethodArgumentNotValidException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+
+        Publication publication = publicationRepository.findById(id_publication)
+                                                       .orElseThrow(EntityNotFoundException::new);
+
+        reaction.setUser(user);
+        reaction.setPublication(publication);
+
+
+        publication.getReactions()
+                   .add(reaction);
+
+        reactionPublicationRepository.save(reaction);
+        publicationRepository.save(publication);
+        userRepository.save(user);
+
+        return reaction;
+    }
+
+    public void removeReaction(long id_user,long id_publication) throws EntityNotFoundException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+        
+        Publication publication = publicationRepository.findById(id_publication)
+                                                       .orElseThrow(EntityNotFoundException::new);
+        
+        ReactionPublication react = reactionPublicationRepository.findByUser_IdUserAndPublication_IdPublication(id_user, id_publication)
+                                                                 .orElseThrow(EntityNotFoundException::new); 
+                                                               
+
+        user.getReactions()
+            .remove(react);
+        
+        publication.getReactions()
+                    .remove(react);
+ 
+        reactionPublicationRepository.delete(react);
+        userRepository.save(user);
+        publicationRepository.save(publication);
     }
 }
