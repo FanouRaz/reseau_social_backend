@@ -1,6 +1,7 @@
 package com.fanou.reseau_social.model;
 
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -10,7 +11,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
@@ -23,10 +26,11 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
+@Table(name = "publication")
 public class Publication{
     @Id
     @GeneratedValue(strategy=GenerationType.AUTO)
-    private long id_publication;
+    private long idPublication;
     private String text;
 
     @JsonIgnore
@@ -36,6 +40,14 @@ public class Publication{
 
     @Temporal(TemporalType.DATE)
     private Date datePublication;
+
+
+    @OneToMany(
+        mappedBy = "publication",
+        cascade = CascadeType.ALL,
+        orphanRemoval=true    
+    )
+    List<ReactionPublication> reactions;
 
     @PrePersist
     public void setDefaultDatePublication() {
