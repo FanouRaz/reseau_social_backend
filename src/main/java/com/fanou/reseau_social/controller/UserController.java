@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.service.UserService;
 import com.fanou.reseau_social.model.Commentaire;
+import com.fanou.reseau_social.model.FriendRequest;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionCommentaire;
 import com.fanou.reseau_social.model.ReactionPublication;
@@ -60,7 +61,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/api/createUser")
+    @PostMapping("/api/user")
     public ResponseEntity<User> createUser(@RequestBody User user){
         try{
             User newUser = userService.createUser(user);
@@ -70,7 +71,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/api/updateUser/{id}")
+    @PutMapping("/api/user/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") Long id, @RequestBody User user) {
         try {
             User updatedUser = userService.updateUser(id, user);
@@ -175,6 +176,50 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }catch(MethodArgumentNotValidException e){
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    //Friend Request
+    @PostMapping("/api/friendRequest/{id_sender}/{id_receiver}")
+    public ResponseEntity<FriendRequest> sendFriendRequest(@PathVariable("id_sender") long id_sender,@PathVariable("id_receiver") long id_receiver){
+        try{
+            FriendRequest request  = userService.sendFriendRequest(id_sender, id_receiver);
+            return ResponseEntity.ok(request);
+
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/api/friendRequest/{id_sender}/{id_receiver}")
+    public ResponseEntity<String> removeFriendRequest(@PathVariable("id_sender") long id_sender, @PathVariable("id_receiver") long id_receiver){
+        try{
+            userService.removeFriendRequest(id_sender, id_receiver);
+            return ResponseEntity.ok("Friend request deleted successfully!");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/api/friendRequest/sent/{id_user}")
+    public ResponseEntity<List<User>> getSentRequests(@PathVariable("id_user") long id_user){
+        try{    
+            List<User> receivers = userService.getSentRequest(id_user);
+            return ResponseEntity.ok(receivers); 
+
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/api/friendRequest/received/{id_user}")
+    public ResponseEntity<List<User>> getReceivedRequests(@PathVariable("id_user") long id_user){
+        try{    
+            List<User> sender = userService.getReceivedRequest(id_user);
+            return ResponseEntity.ok(sender); 
+
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
         }
     }
 }
