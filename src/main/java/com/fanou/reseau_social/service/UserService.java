@@ -11,12 +11,14 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import com.fanou.reseau_social.repository.CommentaireRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
 import com.fanou.reseau_social.repository.ReactionPublicationRepository;
 import com.fanou.reseau_social.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
@@ -32,6 +34,9 @@ public class UserService {
     @Autowired
     private PublicationRepository publicationRepository;
     
+    @Autowired 
+    private CommentaireRepository commentaireRepository;
+
     public List<User> getUsers(){
         return userRepository.findAll();    
     }    
@@ -138,5 +143,28 @@ public class UserService {
         reactionPublicationRepository.delete(react);
         userRepository.save(user);
         publicationRepository.save(publication);
+    }
+
+    public Commentaire commentPublication(long id_user,long id_publication,Commentaire commentaire) throws EntityNotFoundException,MethodArgumentNotValidException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+
+        Publication publication = publicationRepository.findById(id_publication)
+                                                       .orElseThrow(EntityNotFoundException::new);
+        
+        commentaire.setUser(user);
+        commentaire.setPublication(publication);
+
+        user.getCommentaires()
+            .add(commentaire);
+
+        publication.getCommentaires()
+                   .add(commentaire);
+        
+        commentaireRepository.save(commentaire);
+        userRepository.save(user);
+        publicationRepository.save(publication);
+
+        return commentaire;
     }
 }

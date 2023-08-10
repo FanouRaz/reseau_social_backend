@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.service.UserService;
+import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionPublication;
 
@@ -106,6 +107,7 @@ public class UserController {
         }
     }
 
+    //Reactions
     @PostMapping("/api/react/{id_user}/{id_publication}")
     public ResponseEntity<String> reactPublication(@PathVariable("id_user") long id_user,@PathVariable("id_publication") long id_publication, @RequestBody ReactionPublication reaction){
         try{
@@ -127,4 +129,18 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    //Commentaires
+    @PostMapping("/api/publication/comment/{id_user}/{id_publication}")
+    public ResponseEntity<Commentaire> commentPublication(@PathVariable("id_user") long id_user, @PathVariable("id_publication") long id_publication, @RequestBody Commentaire commentaire){
+        try{
+            Commentaire comment = userService.commentPublication(id_user, id_publication, commentaire);
+            return ResponseEntity.ok(comment);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(MethodArgumentNotValidException e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }

@@ -10,6 +10,7 @@ import com.fanou.reseau_social.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
@@ -97,6 +98,14 @@ public class PublicationService {
                                                    
         current.setReaction(reaction.getReaction());
         return reactionRepository.save(current);    
+    }
+
+    //Commentaire
+    public List<Commentaire> getCommentaires(long id) throws EntityNotFoundException{
+        Publication publication = publicationRepository.findById(id)
+                                                       .orElseThrow(EntityNotFoundException::new);
+
+        return publication.getCommentaires();
     }
 }
 

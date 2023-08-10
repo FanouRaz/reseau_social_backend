@@ -35,14 +35,22 @@ public class User{
 
     @JsonIgnore
     private String password;
+
     @OneToMany(
         mappedBy = "user",
         cascade = CascadeType.ALL,
         orphanRemoval = true
-    )
-        
+    )    
     @JsonIgnore
-    List<ReactionPublication> reactions;
+    private List<ReactionPublication> reactions;
+    
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )    
+    @JsonIgnore
+    private List<Commentaire> commentaires;
     
     @Temporal(TemporalType.DATE)
     private Date birthday;

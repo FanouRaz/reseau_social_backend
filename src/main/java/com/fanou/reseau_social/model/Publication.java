@@ -12,7 +12,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -39,7 +38,7 @@ public class Publication{
     
 
     @Temporal(TemporalType.DATE)
-    private Date datePublication;
+    private Date datePublication = new Date();
 
 
     @OneToMany(
@@ -47,10 +46,12 @@ public class Publication{
         cascade = CascadeType.ALL,
         orphanRemoval=true    
     )
-    List<ReactionPublication> reactions;
+    private List<ReactionPublication> reactions;
 
-    @PrePersist
-    public void setDefaultDatePublication() {
-        if (datePublication == null) datePublication = new Date();
-    }
+    @OneToMany(
+        mappedBy = "publication",
+        cascade = CascadeType.ALL,
+        orphanRemoval=true    
+    )
+    private List<Commentaire> commentaires;
 }

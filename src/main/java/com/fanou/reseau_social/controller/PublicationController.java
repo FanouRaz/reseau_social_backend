@@ -18,6 +18,7 @@ import com.fanou.reseau_social.service.PublicationService;
 
 import jakarta.persistence.EntityNotFoundException;
 
+import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
@@ -81,6 +82,7 @@ public class PublicationController {
         }
     }
 
+    //Reactions
     @GetMapping("/api/publication/reactions/{id}")
     public ResponseEntity<List<ReactionPublication>> getReactor(@PathVariable("id") long id){
         try{
@@ -110,6 +112,17 @@ public class PublicationController {
             return ResponseEntity.notFound().build();
         }catch(MethodArgumentNotValidException e){
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    //Commentaires
+    @GetMapping("/api/publication/commentaires/{id_publication}")
+    public ResponseEntity<List<Commentaire>> getCommentaires(@PathVariable("id_publication") long id_publication){
+        try{
+            List<Commentaire> commentaires = publicationService.getCommentaires(id_publication);
+            return ResponseEntity.ok(commentaires);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
         }
     }
 } 
