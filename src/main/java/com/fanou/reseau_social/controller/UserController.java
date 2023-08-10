@@ -22,6 +22,7 @@ import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.service.UserService;
 import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.Publication;
+import com.fanou.reseau_social.model.ReactionCommentaire;
 import com.fanou.reseau_social.model.ReactionPublication;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -108,7 +109,7 @@ public class UserController {
     }
 
     //Reactions
-    @PostMapping("/api/react/{id_user}/{id_publication}")
+    @PostMapping("/api/publication/react/{id_user}/{id_publication}")
     public ResponseEntity<String> reactPublication(@PathVariable("id_user") long id_user,@PathVariable("id_publication") long id_publication, @RequestBody ReactionPublication reaction){
         try{
             userService.reactPublication(id_user, id_publication, reaction);
@@ -120,7 +121,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/api/react/{id_user}/{id_publication}")
+    @DeleteMapping("/api/publication/react/{id_user}/{id_publication}")
     public ResponseEntity<String> removeReaction(@PathVariable("id_user") long id_user,@PathVariable("id_publication") long id_publication){
         try{
             userService.removeReaction(id_user, id_publication);
@@ -143,4 +144,37 @@ public class UserController {
         }
     }
 
+    @PostMapping("/api/commentaire/react/{id_user}/{id_commentaire}")
+    public ResponseEntity<ReactionCommentaire> reactCommentaire(@PathVariable("id_user") long id_user,@PathVariable("id_commentaire") long id_commentaire,@RequestBody ReactionCommentaire reaction){
+        try{
+            ReactionCommentaire react = userService.reactCommentaire(id_user, id_commentaire, reaction);
+            return ResponseEntity.ok(react);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(MethodArgumentNotValidException e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/api/commentaire/react/{id_user}/{id_commentaire}")
+    public ResponseEntity<String> deleteCommentaireReaction(@PathVariable("id_user") long id_user,@PathVariable("id_commentaire") long id_commentaire){
+        try{
+            userService.removeReactionCommentaire(id_user, id_commentaire);
+            return ResponseEntity.ok("Reaction deleted successfully!!");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/api/commentaire/react/{id_user}/{id_commentaire}")
+    public ResponseEntity<ReactionCommentaire> updateCommentaireReaction(@PathVariable("id_user") long id_user,@PathVariable("id_commentaire") long id_commentaire, @RequestBody ReactionCommentaire reaction){
+        try{
+            ReactionCommentaire updatedReaction = userService.updateReactionCommentaire(id_user, id_commentaire, reaction);
+            return ResponseEntity.ok(updatedReaction);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(MethodArgumentNotValidException e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
 }

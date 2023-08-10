@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.fanou.reseau_social.repository.CommentaireRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
+import com.fanou.reseau_social.repository.ReactionCommentaireRepository;
 import com.fanou.reseau_social.repository.ReactionPublicationRepository;
 import com.fanou.reseau_social.repository.UserRepository;
 
@@ -20,6 +21,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.Publication;
+import com.fanou.reseau_social.model.ReactionCommentaire;
 import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
 
@@ -36,6 +38,9 @@ public class UserService {
     
     @Autowired 
     private CommentaireRepository commentaireRepository;
+
+    @Autowired
+    private ReactionCommentaireRepository reactionCommentaireRepository;
 
     public List<User> getUsers(){
         return userRepository.findAll();    
@@ -112,6 +117,8 @@ public class UserService {
         reaction.setUser(user);
         reaction.setPublication(publication);
 
+        user.getReactions()
+            .add(reaction);
 
         publication.getReactions()
                    .add(reaction);
@@ -166,5 +173,62 @@ public class UserService {
         publicationRepository.save(publication);
 
         return commentaire;
+    }
+
+    //Reactions Commmentaires
+    public ReactionCommentaire reactCommentaire(long id_user, long id_commentaire, ReactionCommentaire reaction) throws EntityNotFoundException, MethodArgumentNotValidException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+
+        Commentaire commentaire = commentaireRepository.findById(id_commentaire)
+                                                       .orElseThrow(EntityNotFoundException::new);
+
+        reaction.setUser(user);
+        reaction.setCommentaire(commentaire);
+
+        user.getReactionsCommentaires()
+            .add(reaction);
+
+        commentaire.getReactions()
+                   .add(reaction);
+
+        reactionCommentaireRepository.save(reaction);
+        commentaireRepository.save(commentaire);
+        userRepository.save(user);
+
+        return reaction;
+    }
+
+    public void removeReactionCommentaire(long id_user,long id_commentaire) throws EntityNotFoundException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+        
+        Commentaire commentaire = commentaireRepository.findById(id_commentaire)
+                                                       .orElseThrow(EntityNotFoundException::new);
+        
+        ReactionCommentaire react = reactionCommentaireRepository.findByUser_IdUserAndCommentaire_Id(id_user, id_commentaire)
+                                                                 .orElseThrow(EntityNotFoundException::new); 
+                                                               
+
+        user.getReactionsCommentaires()
+            .remove(react);
+        
+        commentaire.getReactions()
+                   .remove(react);
+ 
+        reactionCommentaireRepository.delete(react);
+        userRepository.save(user);
+        commentaireRepository.save(commentaire);
+    }
+
+    public ReactionCommentaire updateReactionCommentaire(long id_user,long id_commentaire,ReactionCommentaire reaction) throws EntityNotFoundException,MethodArgumentNotValidException{
+        ReactionCommentaire current = reactionCommentaireRepository.findByUser_IdUserAndCommentaire_Id(id_user, id_commentaire)
+                                                                   .orElseThrow(EntityNotFoundException::new);
+        
+        current.setReaction(reaction.getReaction());
+
+        reactionCommentaireRepository.save(current);
+        
+        return current;
     }
 }

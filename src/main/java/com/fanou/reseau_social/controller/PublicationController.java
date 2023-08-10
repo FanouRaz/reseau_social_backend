@@ -103,7 +103,7 @@ public class PublicationController {
         }
     }
 
-    @PutMapping("/api/publication/reaction/{id_user}/{id_publication}")
+    @PutMapping("/api/publication/react/{id_user}/{id_publication}")
     public ResponseEntity<ReactionPublication> updateReaction(@PathVariable("id_user") long id_user,@PathVariable("id_publication") long id_publication,@RequestBody ReactionPublication react){
         try{
             ReactionPublication updated = publicationService.updateReaction(id_user,id_publication, react); 

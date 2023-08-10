@@ -1,10 +1,15 @@
 package com.fanou.reseau_social.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import com.fanou.reseau_social.model.Commentaire;
+import com.fanou.reseau_social.model.ReactionCommentaire;
+import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.repository.CommentaireRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
 import com.fanou.reseau_social.repository.UserRepository;
@@ -48,5 +53,24 @@ public class CommentaireService {
         commentaireRepository.save(current);
 
         return current;
+    }
+
+    public List<ReactionCommentaire> getReactions(long id) throws EntityNotFoundException{
+        Commentaire commentaire =  commentaireRepository.findById(id)
+                                                        .orElseThrow(EntityNotFoundException::new);
+        
+        return commentaire.getReactions();
+    }
+
+    public List<User> getReactorsByReaction(long id,String react) throws EntityNotFoundException{
+        Commentaire commentaire = commentaireRepository.findById(id)
+                                                       .orElseThrow(EntityNotFoundException::new);
+        
+        List<User> users = new ArrayList<>();
+
+        for(ReactionCommentaire reaction : commentaire.getReactions())
+            if(reaction.getReaction().equals(react)) users.add(reaction.getUser());
+        
+        return users;
     }
 }

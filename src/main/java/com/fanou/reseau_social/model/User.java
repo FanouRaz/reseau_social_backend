@@ -51,6 +51,14 @@ public class User{
     )    
     @JsonIgnore
     private List<Commentaire> commentaires;
+
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )    
+    @JsonIgnore
+    private List<ReactionCommentaire> reactionsCommentaires;
     
     @Temporal(TemporalType.DATE)
     private Date birthday;
