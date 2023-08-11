@@ -60,7 +60,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/api/createUser")
+    @PostMapping("/api/user")
     public ResponseEntity<User> createUser(@RequestBody User user){
         try{
             User newUser = userService.createUser(user);
@@ -70,7 +70,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/api/updateUser/{id}")
+    @PutMapping("/api/user/{id}")
     public ResponseEntity<User> updateUser(@PathVariable("id") Long id, @RequestBody User user) {
         try {
             User updatedUser = userService.updateUser(id, user);
