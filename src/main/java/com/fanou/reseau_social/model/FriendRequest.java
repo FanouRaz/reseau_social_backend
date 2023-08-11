@@ -1,5 +1,7 @@
 package com.fanou.reseau_social.model;
 
+import java.util.Date;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -8,6 +10,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,20 +22,21 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ReactionCommentaire {
+public class FriendRequest{
     @Id
     @GeneratedValue
-    private long id_react;
-
-    private String reaction;
+    private long id;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="idUser")
-    private User user;
+    @JoinColumn(name="sender_idUser")
+    private User sender;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id")
-    private Commentaire commentaire;
+    @JoinColumn(name = "receiver_idUser")
+    private User receiver;
+
+    @Temporal(TemporalType.DATE)
+    private Date dateEnvoi = new Date();
 }

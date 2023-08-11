@@ -9,9 +9,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fanou.reseau_social.repository.CommentaireRepository;
+import com.fanou.reseau_social.repository.FriendRequestRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
 import com.fanou.reseau_social.repository.ReactionCommentaireRepository;
 import com.fanou.reseau_social.repository.ReactionPublicationRepository;
@@ -20,6 +22,7 @@ import com.fanou.reseau_social.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Commentaire;
+import com.fanou.reseau_social.model.FriendRequest;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionCommentaire;
 import com.fanou.reseau_social.model.ReactionPublication;
@@ -41,6 +44,9 @@ public class UserService {
 
     @Autowired
     private ReactionCommentaireRepository reactionCommentaireRepository;
+
+    @Autowired
+    private FriendRequestRepository requestRepository;
 
     public List<User> getUsers(){
         return userRepository.findAll();    
@@ -230,5 +236,69 @@ public class UserService {
         reactionCommentaireRepository.save(current);
         
         return current;
+    }
+
+    //Friend Request
+    public FriendRequest sendFriendRequest(long id_sender,long id_receiver,FriendRequest request) throws EntityNotFoundException{ 
+        User sender = userRepository.findById(id_sender)
+                                    .orElseThrow(EntityNotFoundException::new);
+        
+        User receiver = userRepository.findById(id_receiver)
+                                      .orElseThrow(EntityNotFoundException::new);
+        
+        request.setReceiver(receiver);
+        request.setSender(sender);
+
+        sender.getSentFriendRequests()
+              .add(request);
+        receiver.getReceivedFriendRequests()
+                .add(request);
+
+        System.out.println(sender.getSentFriendRequests().size());
+        requestRepository.save(request);
+        userRepository.save(sender);
+        userRepository.save(receiver);
+
+        return request;       
+    }
+
+    public List<User> getSentRequest(long id_sender){
+        List<FriendRequest> requests = requestRepository.findAllBySender_IdUser(id_sender);
+        List<User> receivers = new ArrayList<>();
+
+        for(FriendRequest request : requests)
+            receivers.add(request.getReceiver());
+
+        return receivers;
+    }
+
+
+    public List<User> getReceivedRequest(long id_receiver){
+        List<FriendRequest> requests = requestRepository.findAllByReceiver_IdUser(id_receiver);
+        List<User> senders = new ArrayList<>();
+
+        for(FriendRequest request : requests)
+            senders.add(request.getSender());
+            
+        return senders;
+    }
+
+
+    public void removeFriendRequest(long id_sender,long id_receiver) throws EntityNotFoundException{
+        FriendRequest toRemove = requestRepository.findBySender_IdUserAndReceiver_IdUser(id_sender, id_receiver)
+                                                  .orElseThrow(EntityNotFoundException::new);
+        
+        //Retirer la demande d'amis de la liste de demande envoyé de l'envoyeur et de la liste de demande reçu du destinataire
+        toRemove.getSender()
+                .getSentFriendRequests()
+                .remove(toRemove);
+
+        toRemove.getReceiver()
+                .getReceivedFriendRequests()
+                .remove(toRemove);
+
+        userRepository.save(toRemove.getSender());
+        userRepository.save(toRemove.getReceiver());
+        requestRepository.delete(toRemove);
     }
 }

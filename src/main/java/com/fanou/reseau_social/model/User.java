@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -32,9 +33,9 @@ public class User{
     private String username;
     private String email;
     private String phoneNumber;
-
-    @JsonIgnore
     private String password;
+    private String profilePicture = "uploads/users/user_placeholder.png";
+
 
     @OneToMany(
         mappedBy = "user",
@@ -64,10 +65,29 @@ public class User{
     private Date birthday;
 
 
-    @OneToMany(targetEntity = Publication.class, cascade= CascadeType.REMOVE)
+    @OneToMany(
+        targetEntity = Publication.class,
+        cascade= CascadeType.REMOVE
+    )
     private List<Publication> publications;
     
-    private String profilePicture = "uploads/users/user_placeholder.png";
+
+    @OneToMany(
+        mappedBy = "sender",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )    
+    @JsonIgnore
+    private List<FriendRequest> sentFriendRequests;
+
+    @OneToMany(
+        mappedBy = "receiver",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )    
+    @JsonIgnore
+    private List<FriendRequest> receivedFriendRequests;
+   
     
     public void addPublication(Publication publication){
         publications.add(publication);
