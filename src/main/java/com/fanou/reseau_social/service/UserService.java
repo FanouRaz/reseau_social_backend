@@ -239,11 +239,10 @@ public class UserService {
     }
 
     //Friend Request
-    public FriendRequest sendFriendRequest(long id_sender,long id_receiver) throws EntityNotFoundException{ 
-        FriendRequest request = new FriendRequest();
+    public FriendRequest sendFriendRequest(long id_sender,long id_receiver,FriendRequest request) throws EntityNotFoundException{ 
         User sender = userRepository.findById(id_sender)
                                     .orElseThrow(EntityNotFoundException::new);
-
+        
         User receiver = userRepository.findById(id_receiver)
                                       .orElseThrow(EntityNotFoundException::new);
         
@@ -255,9 +254,10 @@ public class UserService {
         receiver.getReceivedFriendRequests()
                 .add(request);
 
+        System.out.println(sender.getSentFriendRequests().size());
+        requestRepository.save(request);
         userRepository.save(sender);
         userRepository.save(receiver);
-        requestRepository.save(request);
 
         return request;       
     }

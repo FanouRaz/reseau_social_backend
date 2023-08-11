@@ -181,9 +181,9 @@ public class UserController {
 
     //Friend Request
     @PostMapping("/api/friendRequest/{id_sender}/{id_receiver}")
-    public ResponseEntity<FriendRequest> sendFriendRequest(@PathVariable("id_sender") long id_sender,@PathVariable("id_receiver") long id_receiver){
+    public ResponseEntity<FriendRequest> sendFriendRequest(@PathVariable("id_sender") long id_sender,@PathVariable("id_receiver") long id_receiver,@RequestBody FriendRequest req){
         try{
-            FriendRequest request  = userService.sendFriendRequest(id_sender, id_receiver);
+            FriendRequest request  = userService.sendFriendRequest(id_sender, id_receiver,req);
             return ResponseEntity.ok(request);
 
         }catch(EntityNotFoundException e){

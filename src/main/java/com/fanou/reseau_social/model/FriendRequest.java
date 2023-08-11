@@ -29,12 +29,12 @@ public class FriendRequest{
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="idUser")
+    @JoinColumn(name="sender_idUser")
     private User sender;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "idUser")
+    @JoinColumn(name = "receiver_idUser")
     private User receiver;
 
     @Temporal(TemporalType.DATE)
