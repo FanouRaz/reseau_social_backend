@@ -2,7 +2,9 @@ package com.fanou.reseau_social.model;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -92,13 +94,13 @@ public class User{
     private List<FriendRequest> receivedFriendRequests;
     
     @JsonIgnore
-    @ManyToMany(cascade=CascadeType.PERSIST)
+    @ManyToMany(cascade={CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE})
     @JoinTable(
         name = "friendship",
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "friend_id")
     )
-    private List<User> friends = new ArrayList<>();
+    private Set <User> friends = new HashSet<User>();
     
     public void addPublication(Publication publication){
         publications.add(publication);

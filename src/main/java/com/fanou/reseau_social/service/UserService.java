@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.fanou.reseau_social.repository.CommentaireRepository;
 import com.fanou.reseau_social.repository.FriendRequestRepository;
@@ -345,8 +346,12 @@ public class UserService {
                                      .orElseThrow(EntityNotFoundException::new);
         User toRemove = userRepository.findById(id_toRemove)
                                       .orElseThrow(EntityNotFoundException::new);
-
+        
+        
+        System.out.println("remover : "+remover.getUsername());
+        System.out.println("to remove : "+toRemove.getUsername());
         if(!remover.getFriends().contains(toRemove)) throw new IllegalArgumentException("Unfriend not allowed! You're not friends");
+        
         else{
             toRemove.getFriends()
                     .remove(remover);
@@ -359,7 +364,7 @@ public class UserService {
         } 
     }
 
-    public List<User> getFriends(long id_user){
+    public Set<User> getFriends(long id_user){
         User user = userRepository.findById(id_user)
                                   .orElseThrow(EntityNotFoundException::new);
 

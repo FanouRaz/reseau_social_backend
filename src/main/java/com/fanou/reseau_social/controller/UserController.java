@@ -2,6 +2,7 @@ package com.fanou.reseau_social.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -236,9 +237,9 @@ public class UserController {
     }
 
     @GetMapping("/api/user/friends/{id_user}")
-    public ResponseEntity<List<User>> getFriendList(@PathVariable("id_user") long id_user){
+    public ResponseEntity<Set<User>> getFriendList(@PathVariable("id_user") long id_user){
         try{
-            List<User> friendList = userService.getFriends(id_user);
+            Set<User> friendList = userService.getFriends(id_user);
             return ResponseEntity.ok(friendList);
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
@@ -246,7 +247,7 @@ public class UserController {
     }
 
     @DeleteMapping("/api/user/unfriend/{id_remover}/{id_remove}")
-    public ResponseEntity<String> unfriend(@PathVariable("id_remove") long id_remover,@PathVariable("id_remove") long id_toRemove){
+    public ResponseEntity<String> unfriend(@PathVariable("id_remove") long id_remover,@PathVariable("id_remover") long id_toRemove){
         try{
             userService.removeFriend(id_remover, id_toRemove);
             return ResponseEntity.ok("Unfriend successfully!");
