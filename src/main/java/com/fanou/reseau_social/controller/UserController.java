@@ -2,6 +2,7 @@ package com.fanou.reseau_social.controller;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -222,4 +223,40 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    //block
+    @GetMapping("/api/user/blocked/{id_user}")
+    public ResponseEntity<Set<User>> getBlockList(@PathVariable("id_user") long id){
+        try{
+            Set<User> blocked = userService.getBlockList(id);
+            return ResponseEntity.ok(blocked);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/api/user/block/{id_user}/{id_block}")
+    public ResponseEntity<String> block(@PathVariable("id_user") long id_user,@PathVariable("id_block") long id_block){
+        try{
+            userService.blockUser(id_user, id_block);
+            return ResponseEntity.ok("User blocked successfully");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Block not allowed!");
+        }
+    }
+
+    @DeleteMapping("/api/user/unblock/{id_user}/{id_block}")
+    public ResponseEntity<String> unblock(@PathVariable("id_user") long id_user,@PathVariable("id_block") long id_block){
+        try{
+            userService.unblock(id_user, id_block);
+            return ResponseEntity.ok("User unblocked successfully");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Block not allowed!");
+        }
+    }
+
 }

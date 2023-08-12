@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.fanou.reseau_social.repository.CommentaireRepository;
 import com.fanou.reseau_social.repository.FriendRequestRepository;
@@ -300,5 +301,45 @@ public class UserService {
         userRepository.save(toRemove.getSender());
         userRepository.save(toRemove.getReceiver());
         requestRepository.delete(toRemove);
+    }
+
+
+    //bloquage
+    public void blockUser(long id_blocker, long id_to_block) throws EntityNotFoundException, IllegalArgumentException{
+        User blocker  = userRepository.findById(id_blocker)
+                                      .orElseThrow(EntityNotFoundException::new);
+
+        User toBlock = userRepository.findById(id_to_block)
+                                     .orElseThrow(EntityNotFoundException::new);
+
+        if(blocker.getBlocks().contains(toBlock) || id_blocker == id_to_block) throw new IllegalArgumentException("Block not Allowed");
+        else {
+            blocker.getBlocks()
+                   .add(toBlock);
+            
+            userRepository.save(blocker);
+        }
+    }
+
+    public Set<User> getBlockList(long id) throws EntityNotFoundException{
+        User user = userRepository.findById(id)
+                                  .orElseThrow(EntityNotFoundException::new);
+
+        return user.getBlocks();
+    }
+
+    public void unblock(long id_user,long id_blocked) throws EntityNotFoundException,IllegalArgumentException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);        
+        
+        User blocked = userRepository.findById(id_blocked)
+                                     .orElseThrow(EntityNotFoundException::new);
+
+        if(!user.getBlocks().contains(blocked)) throw new IllegalArgumentException("Unblock not allowed");
+       
+        user.getBlocks()
+            .remove(blocked);
+
+        userRepository.save(user);
     }
 }
