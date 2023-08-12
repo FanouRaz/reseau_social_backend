@@ -181,13 +181,15 @@ public class UserController {
 
     //Friend Request
     @PostMapping("/api/friendRequest/{id_sender}/{id_receiver}")
-    public ResponseEntity<FriendRequest> sendFriendRequest(@PathVariable("id_sender") long id_sender,@PathVariable("id_receiver") long id_receiver,@RequestBody FriendRequest req){
+    public ResponseEntity<Object> sendFriendRequest(@PathVariable("id_sender") long id_sender,@PathVariable("id_receiver") long id_receiver,@RequestBody FriendRequest req){
         try{
             FriendRequest request  = userService.sendFriendRequest(id_sender, id_receiver,req);
             return ResponseEntity.ok(request);
 
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("friend Request not allowed");
         }
     }
 
@@ -220,6 +222,38 @@ public class UserController {
 
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/api/friendRequest/accept/{id_sender}/{id_receiver}")
+    public ResponseEntity<String> accceptRequest(@PathVariable("id_sender") long id_sender,@PathVariable("id_receiver") long id_receiver){
+        try{
+            userService.addFriend(id_sender, id_receiver);
+            return ResponseEntity.ok("Request accepted!");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/api/user/friends/{id_user}")
+    public ResponseEntity<List<User>> getFriendList(@PathVariable("id_user") long id_user){
+        try{
+            List<User> friendList = userService.getFriends(id_user);
+            return ResponseEntity.ok(friendList);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/api/user/unfriend/{id_remover}/{id_remove}")
+    public ResponseEntity<String> unfriend(@PathVariable("id_remove") long id_remover,@PathVariable("id_remove") long id_toRemove){
+        try{
+            userService.removeFriend(id_remover, id_toRemove);
+            return ResponseEntity.ok("Unfriend successfully!");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Unfriend not allowed");
         }
     }
 }

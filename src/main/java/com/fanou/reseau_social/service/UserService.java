@@ -66,6 +66,13 @@ public class UserService {
         //Suppression de la photo de profil de l'utilisateur si sa photo est différent de la photo par défaut
         if(!(user.getProfilePicture()).equals("uploads/users/user_placeholder.png")) Files.delete(imgPath);
         
+        //retirer de la liste d'ami de ses amis
+        for(User friend : user.getFriends()){
+            friend.getFriends()
+                  .remove(user);
+            userRepository.save(friend);
+        }
+
         userRepository.delete(user);       
     }
 
@@ -239,13 +246,25 @@ public class UserService {
     }
 
     //Friend Request
-    public FriendRequest sendFriendRequest(long id_sender,long id_receiver,FriendRequest request) throws EntityNotFoundException{ 
+
+    //Indique si une demande a déjà été envoyé
+    private boolean hasReceivedFriendRequest(User receiver, User sender) {
+        for (FriendRequest receivedRequest : receiver.getReceivedFriendRequests()) 
+            if (receivedRequest.getSender().equals(sender)) return true;
+        
+        return false;
+    }
+
+    public FriendRequest sendFriendRequest(long id_sender,long id_receiver,FriendRequest request) throws EntityNotFoundException,IllegalArgumentException{ 
         User sender = userRepository.findById(id_sender)
                                     .orElseThrow(EntityNotFoundException::new);
         
         User receiver = userRepository.findById(id_receiver)
                                       .orElseThrow(EntityNotFoundException::new);
         
+        //Si les 2 utilisateurs sont déjà amis ou si une demande a déjà été envoyé par l'un des 2 ou si une personne envoi une demande à lui même
+        if(receiver.getFriends().contains(sender) || hasReceivedFriendRequest(receiver,sender) || id_sender == id_receiver) throw new IllegalArgumentException("Friend request not allowed");
+
         request.setReceiver(receiver);
         request.setSender(sender);
 
@@ -254,7 +273,6 @@ public class UserService {
         receiver.getReceivedFriendRequests()
                 .add(request);
 
-        System.out.println(sender.getSentFriendRequests().size());
         requestRepository.save(request);
         userRepository.save(sender);
         userRepository.save(receiver);
@@ -300,5 +318,51 @@ public class UserService {
         userRepository.save(toRemove.getSender());
         userRepository.save(toRemove.getReceiver());
         requestRepository.delete(toRemove);
+    }
+
+    public void addFriend(long id_sender,long id_receiver) throws EntityNotFoundException{
+        FriendRequest request = requestRepository.findBySender_IdUserAndReceiver_IdUser(id_sender, id_receiver)
+                                                 .orElseThrow(EntityNotFoundException::new);
+
+        //Lorsque la demande est accepté par le destinataire, l'expediteur et le destinataire de la demande sont amis
+        request.getReceiver()
+               .getFriends()
+               .add(request.getSender());
+
+        request.getSender()
+               .getFriends()
+               .add(request.getReceiver());
+        
+        userRepository.save(request.getReceiver());
+        userRepository.save(request.getSender());
+
+        //La demande d'amis est supprimé
+        requestRepository.delete(request);
+    }   
+
+    public void removeFriend(long id_remover,long id_toRemove) throws EntityNotFoundException,IllegalArgumentException{
+        User remover = userRepository.findById(id_remover)
+                                     .orElseThrow(EntityNotFoundException::new);
+        User toRemove = userRepository.findById(id_toRemove)
+                                      .orElseThrow(EntityNotFoundException::new);
+
+        if(!remover.getFriends().contains(toRemove)) throw new IllegalArgumentException("Unfriend not allowed! You're not friends");
+        else{
+            toRemove.getFriends()
+                    .remove(remover);
+
+            remover.getFriends()
+                   .remove(toRemove);
+            
+            userRepository.save(toRemove);
+            userRepository.save(remover);
+        } 
+    }
+
+    public List<User> getFriends(long id_user){
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+
+        return user.getFriends();
     }
 }
