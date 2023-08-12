@@ -1,6 +1,5 @@
 package com.fanou.reseau_social.model;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -93,7 +91,18 @@ public class User{
     )    
     @JsonIgnore
     private List<FriendRequest> receivedFriendRequests;
-
+    
+    //Amitié
+    @JsonIgnore
+    @ManyToMany(cascade={CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE})
+    @JoinTable(
+        name = "friendship",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "friend_id")
+    )
+    private Set <User> friends = new HashSet<User>();
+    
+    //Bloquage
     @JsonIgnore
     @ManyToMany(cascade={CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE})
     @JoinTable(
