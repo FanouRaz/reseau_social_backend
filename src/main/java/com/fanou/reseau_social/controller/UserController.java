@@ -247,7 +247,7 @@ public class UserController {
     }
 
     @DeleteMapping("/api/user/unfriend/{id_remover}/{id_remove}")
-    public ResponseEntity<String> unfriend(@PathVariable("id_remove") long id_remover,@PathVariable("id_remover") long id_toRemove){
+    public ResponseEntity<String> unfriend(@PathVariable("id_remover") long id_remover,@PathVariable("id_remove") long id_toRemove){
         try{
             userService.removeFriend(id_remover, id_toRemove);
             return ResponseEntity.ok("Unfriend successfully!");
