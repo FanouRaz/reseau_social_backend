@@ -23,6 +23,7 @@ import com.fanou.reseau_social.model.User;
 import com.fanou.reseau_social.service.UserService;
 import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.FriendRequest;
+import com.fanou.reseau_social.model.Message;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionCommentaire;
 import com.fanou.reseau_social.model.ReactionPublication;
@@ -293,4 +294,27 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Block not allowed!");
         }
     }
+
+    //Messages
+    @GetMapping("/api/user/messages/{id_user1}/{id_user2}")
+    public ResponseEntity<List<Message>> getMessages(@PathVariable("id_user1") long id_user1, @PathVariable("id_user2") long id_user2){
+        try{
+            List<Message> messages = userService.getDiscussion(id_user1, id_user2);
+            return ResponseEntity.ok(messages);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/api/user/message/{id_sender}/{id_receiver}")
+    public ResponseEntity<Object> sendMessage(@PathVariable("id_sender") long id_sender, @PathVariable("id_receiver") long id_receiver, @RequestBody Message message){
+        try{
+            Message sent = userService.sendMessage(id_sender, id_receiver, message) ;
+            return ResponseEntity.ok(sent);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(IllegalArgumentException e){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Message not allowed!");
+        }
+    } 
 }

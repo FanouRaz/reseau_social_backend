@@ -112,7 +112,23 @@ public class User{
     )
     private Set<User> blocks = new HashSet<User>();
    
-    
+    //messages
+    @OneToMany(
+        mappedBy = "sender",
+        cascade = {CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE},
+        orphanRemoval = true
+    )    
+    @JsonIgnore
+    private List<Message> sentMessages;
+
+    @OneToMany(
+        mappedBy = "receiver",
+        cascade = {CascadeType.PERSIST,CascadeType.REFRESH,CascadeType.MERGE},
+        orphanRemoval = true
+    )    
+    @JsonIgnore
+    private List<Message> receivedMessages;
+
     public void addPublication(Publication publication){
         publications.add(publication);
         publication.setUser(this);

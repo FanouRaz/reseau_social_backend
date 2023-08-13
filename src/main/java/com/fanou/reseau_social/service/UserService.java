@@ -12,9 +12,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
 
 import com.fanou.reseau_social.repository.CommentaireRepository;
 import com.fanou.reseau_social.repository.FriendRequestRepository;
+import com.fanou.reseau_social.repository.MessageRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
 import com.fanou.reseau_social.repository.ReactionCommentaireRepository;
 import com.fanou.reseau_social.repository.ReactionPublicationRepository;
@@ -24,6 +26,7 @@ import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.FriendRequest;
+import com.fanou.reseau_social.model.Message;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionCommentaire;
 import com.fanou.reseau_social.model.ReactionPublication;
@@ -48,6 +51,9 @@ public class UserService {
 
     @Autowired
     private FriendRequestRepository requestRepository;
+
+    @Autowired
+    private MessageRepository messageRepository;
 
     public List<User> getUsers(){
         return userRepository.findAll();    
@@ -408,4 +414,60 @@ public class UserService {
 
         userRepository.save(user);
     }
+
+    //Messages
+    public List<Message> getDiscussion(long id_user1,long id_user2) throws EntityNotFoundException{
+        
+        List<Message> sent = messageRepository.findAllBySender_IdUserAndReceiver_IdUser(id_user1, id_user2);
+        List<Message> received = messageRepository.findAllBySender_IdUserAndReceiver_IdUser(id_user2, id_user1);
+        
+        List<Message> messages = new ArrayList<Message>(sent);
+
+        messages.addAll(received);
+
+        //trier par date d'envoi
+        Collections.sort(messages, (a,b) -> (int)(a.getId() - a.getId()));
+        
+        return messages;
+    }
+
+    public List<User> getMessagedPeople(long id_user) throws EntityNotFoundException{
+        List<User> messaged = new ArrayList<User>();
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+        
+        for(Message message : user.getSentMessages())
+            if(!messaged.contains(message.getReceiver())) messaged.add(message.getReceiver());
+            
+        for(Message message : user.getReceivedMessages())
+            if(!messaged.contains(message.getSender())) messaged.add(message.getSender());
+    
+        return messaged;
+    }
+
+    public Message sendMessage(long id_sender, long id_receiver,Message message) throws EntityNotFoundException, IllegalArgumentException{
+        User sender = userRepository.findById(id_sender)
+                                    .orElseThrow(EntityNotFoundException::new);
+        User receiver = userRepository.findById(id_receiver)
+                                      .orElseThrow(EntityNotFoundException::new);
+
+        if(sender.getBlocks().contains(receiver) || receiver.getBlocks().contains(sender)) throw new IllegalArgumentException("Chatting not allowed!");
+        
+        message.setSender(sender); 
+        message.setReceiver(receiver);
+
+        sender.getSentMessages()
+              .add(message);
+
+        receiver.getReceivedMessages()
+              .add(message);
+        
+    
+        messageRepository.save(message);
+        userRepository.save(sender);
+        userRepository.save(receiver);
+
+        return message;
+    }
 }
+
