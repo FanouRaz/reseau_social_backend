@@ -19,6 +19,7 @@ import com.fanou.reseau_social.repository.FriendRequestRepository;
 import com.fanou.reseau_social.repository.MessageRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
 import com.fanou.reseau_social.repository.ReactionCommentaireRepository;
+import com.fanou.reseau_social.repository.ReactionMessageRepository;
 import com.fanou.reseau_social.repository.ReactionPublicationRepository;
 import com.fanou.reseau_social.repository.UserRepository;
 
@@ -29,6 +30,7 @@ import com.fanou.reseau_social.model.FriendRequest;
 import com.fanou.reseau_social.model.Message;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionCommentaire;
+import com.fanou.reseau_social.model.ReactionMessage;
 import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
 
@@ -54,6 +56,9 @@ public class UserService {
 
     @Autowired
     private MessageRepository messageRepository;
+
+    @Autowired
+    private ReactionMessageRepository reactionMessageRepository;
 
     public List<User> getUsers(){
         return userRepository.findAll();    
@@ -468,6 +473,63 @@ public class UserService {
         userRepository.save(receiver);
 
         return message;
+    }
+
+    //Reaction messages
+    public ReactionMessage reactMessage(long id_user, long id_message, ReactionMessage reaction) throws EntityNotFoundException, MethodArgumentNotValidException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+
+        Message message = messageRepository.findById(id_message)
+                                                       .orElseThrow(EntityNotFoundException::new);
+
+        reaction.setUser(user);
+        reaction.setMessage(message);
+
+        user.getReactionsMessages()
+            .add(reaction);
+
+        message.getReactions()
+                   .add(reaction);
+
+        reactionMessageRepository.save(reaction);
+        messageRepository.save(message);
+        userRepository.save(user);
+
+        return reaction;
+    }
+
+    public void removeReactionMessage(long id_user,long id_message) throws EntityNotFoundException{
+        User user = userRepository.findById(id_user)
+                                  .orElseThrow(EntityNotFoundException::new);
+        
+        Message message = messageRepository.findById(id_message)
+                                                       .orElseThrow(EntityNotFoundException::new);
+        
+        ReactionMessage react = reactionMessageRepository.findByUser_IdUserAndMessage_Id(id_user, id_message)
+                                                                 .orElseThrow(EntityNotFoundException::new); 
+                                                               
+
+        user.getReactionsMessages()
+            .remove(react);
+        
+        message.getReactions()
+                   .remove(react);
+ 
+        reactionMessageRepository.delete(react);
+        userRepository.save(user);
+        messageRepository.save(message);
+    }
+
+    public ReactionMessage updateReactionMessage(long id_user,long id_message,ReactionMessage reaction) throws EntityNotFoundException,MethodArgumentNotValidException{
+        ReactionMessage current = reactionMessageRepository.findByUser_IdUserAndMessage_Id(id_user, id_message)
+                                                                   .orElseThrow(EntityNotFoundException::new);
+        
+        current.setReaction(reaction.getReaction());
+
+        reactionMessageRepository.save(current);
+        
+        return current;
     }
 }
 

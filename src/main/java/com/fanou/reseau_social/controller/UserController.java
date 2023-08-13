@@ -26,6 +26,7 @@ import com.fanou.reseau_social.model.FriendRequest;
 import com.fanou.reseau_social.model.Message;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionCommentaire;
+import com.fanou.reseau_social.model.ReactionMessage;
 import com.fanou.reseau_social.model.ReactionPublication;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -317,4 +318,42 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Message not allowed!");
         }
     } 
+
+    //Reaction messages
+    @PostMapping("/api/user/message/react/{id_user}/{id_message}")
+    public ResponseEntity<ReactionMessage> reactMessage(@PathVariable("id_user") long id_user,@PathVariable("id_message") long id_message,@RequestBody ReactionMessage reaction){
+        try{
+            ReactionMessage react = userService.reactMessage(id_user, id_message, reaction);
+            return ResponseEntity.ok(react);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(MethodArgumentNotValidException e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @DeleteMapping("/api/user/message/react/{id_user}/{id_message}")
+    public ResponseEntity<String> deleteMessageReaction(@PathVariable("id_user") long id_user,@PathVariable("id_message") long id_message){
+        try{
+            userService.removeReactionMessage(id_user, id_message);
+            return ResponseEntity.ok("Reaction deleted successfully!!");
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/api/user/message/react/{id_user}/{id_message}")
+    public ResponseEntity<ReactionMessage> updateMessageReaction(@PathVariable("id_user") long id_user,@PathVariable("id_message") long id_message, @RequestBody ReactionMessage reaction){
+        try{
+            ReactionMessage updatedReaction = userService.updateReactionMessage(id_user, id_message, reaction);
+            return ResponseEntity.ok(updatedReaction);
+        }catch(EntityNotFoundException e){
+            return ResponseEntity.notFound().build();
+        }catch(MethodArgumentNotValidException e){
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+    
 }

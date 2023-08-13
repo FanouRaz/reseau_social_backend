@@ -129,6 +129,14 @@ public class User{
     @JsonIgnore
     private List<Message> receivedMessages;
 
+    @OneToMany(
+        mappedBy = "user",
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )    
+    @JsonIgnore
+    private List<ReactionMessage> reactionsMessages;
+
     public void addPublication(Publication publication){
         publications.add(publication);
         publication.setUser(this);
