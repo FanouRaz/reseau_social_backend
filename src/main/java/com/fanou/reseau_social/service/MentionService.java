@@ -19,7 +19,7 @@ public class MentionService {
 
     //Gère les mentions d'utilisateur dans les commentaires et publications
     public List<Long> handleMentionsContent(String content){
-        //Detection de mentions dans le 
+        //Detection de mentions dans le contenu
         Pattern mentionPattern = Pattern.compile("@(\\w+)");
         Matcher matcher = mentionPattern.matcher(content);
 
@@ -27,8 +27,7 @@ public class MentionService {
 
         while(matcher.find()){
             String username = matcher.group(1);
-            System.out.println(username.replace("_"," ") + " mentionned");
-
+            
             User mentionnedUser = userRepository.findByUsername(username.replace("_", " "))
                                                 .orElse(null);
             
