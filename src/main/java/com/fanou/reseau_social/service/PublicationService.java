@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import com.fanou.reseau_social.repository.NotificationRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
 import com.fanou.reseau_social.repository.ReactionPublicationRepository;
 import com.fanou.reseau_social.repository.UserRepository;
@@ -11,6 +12,8 @@ import com.fanou.reseau_social.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Commentaire;
+import com.fanou.reseau_social.model.Notification;
+import com.fanou.reseau_social.model.NotificationType;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionPublication;
 import com.fanou.reseau_social.model.User;
@@ -22,10 +25,18 @@ import java.util.List;
 public class PublicationService {
     @Autowired
     private PublicationRepository publicationRepository;
+    
     @Autowired
     private UserRepository userRepository;
+    
     @Autowired
     private ReactionPublicationRepository reactionRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired 
+    private MentionService mentionService;
 
     public List<Publication> getPublications(){
         return publicationRepository.findAll();
@@ -59,6 +70,21 @@ public class PublicationService {
         user.addPublication(publication);
 
         publicationRepository.save(publication);
+        
+        //Si le contenu de la publication contient une ou plusieurs mention, on notifie l'utilisateur
+        if(mentionService.handleMentionsContent(publication.getText()).size() != 0){
+            for(long id_mentionned : mentionService.handleMentionsContent(publication.getText())){
+                Notification notification = new Notification();
+                
+                notification.setTriggerId(id_user);
+                notification.setReceiverId(id_mentionned);
+                notification.setContentId(publication.getIdPublication());
+                notification.setType(NotificationType.MENTION_PUBLICATION);
+
+                notificationRepository.save(notification);
+            }
+        }
+
         userRepository.save(user);
         
         return publication;

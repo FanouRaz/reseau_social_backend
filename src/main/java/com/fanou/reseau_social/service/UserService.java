@@ -15,6 +15,7 @@ import java.util.Set;
 
 import com.fanou.reseau_social.repository.CommentaireRepository;
 import com.fanou.reseau_social.repository.FriendRequestRepository;
+import com.fanou.reseau_social.repository.NotificationRepository;
 import com.fanou.reseau_social.repository.PublicationRepository;
 import com.fanou.reseau_social.repository.ReactionCommentaireRepository;
 import com.fanou.reseau_social.repository.ReactionPublicationRepository;
@@ -24,6 +25,8 @@ import jakarta.persistence.EntityNotFoundException;
 
 import com.fanou.reseau_social.model.Commentaire;
 import com.fanou.reseau_social.model.FriendRequest;
+import com.fanou.reseau_social.model.Notification;
+import com.fanou.reseau_social.model.NotificationType;
 import com.fanou.reseau_social.model.Publication;
 import com.fanou.reseau_social.model.ReactionCommentaire;
 import com.fanou.reseau_social.model.ReactionPublication;
@@ -48,6 +51,20 @@ public class UserService {
 
     @Autowired
     private FriendRequestRepository requestRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private MentionService mentionService;
+
+     //Indique si une demande a déjà été envoyé
+    private boolean hasReceivedFriendRequest(User receiver, User sender) {
+        for (FriendRequest receivedRequest : receiver.getReceivedFriendRequests()) 
+            if (receivedRequest.getSender().equals(sender)) return true;
+        
+        return false;
+    }
 
     public List<User> getUsers(){
         return userRepository.findAll();    
@@ -128,6 +145,21 @@ public class UserService {
         Publication publication = publicationRepository.findById(id_publication)
                                                        .orElseThrow(EntityNotFoundException::new);
 
+        //Déclenche une notification prévenant le propriétaire de la publicatio
+        if(id_user != publication.getUser().getIdUser()){
+            Notification notification = new Notification();
+
+            notification.setTriggerId(id_user);
+            notification.setType(NotificationType.REACTION_PUBLICATION);
+            notification.setReceiverId(publication.getUser().getIdUser());
+            notification.setContentId(id_publication);
+            notification.setRead(false);
+
+            notificationRepository.save(notification);
+        }
+
+
+        //Réaction
         reaction.setUser(user);
         reaction.setPublication(publication);
 
@@ -166,15 +198,44 @@ public class UserService {
         publicationRepository.save(publication);
     }
 
+
     public Commentaire commentPublication(long id_user,long id_publication,Commentaire commentaire) throws EntityNotFoundException,MethodArgumentNotValidException{
         User user = userRepository.findById(id_user)
                                   .orElseThrow(EntityNotFoundException::new);
 
         Publication publication = publicationRepository.findById(id_publication)
                                                        .orElseThrow(EntityNotFoundException::new);
-        
+                                                       
+        //Notifier le propriétaire de la publication
+        if(id_user != publication.getUser().getIdUser()){
+            Notification notification = new Notification();
+            notification.setRead(false);
+            notification.setTriggerId(id_user);
+            notification.setReceiverId(publication.getUser().getIdUser());
+            notification.setContentId(id_publication);
+            notification.setType(NotificationType.COMMENT);
+
+            notificationRepository.save(notification);
+        }
+
         commentaire.setUser(user);
         commentaire.setPublication(publication);
+
+        //Si le contenu du commentaire contient une ou plusieurs mention, on notifie l'utilisateur
+        if(mentionService.handleMentionsContent(commentaire.getCommentaire()).size() != 0){
+            for(long id_mentionned : mentionService.handleMentionsContent(commentaire.getCommentaire())){
+                Notification mention = new Notification();
+                
+                if(id_user != id_mentionned){
+                    mention.setTriggerId(id_user);
+                    mention.setReceiverId(id_mentionned);
+                    mention.setContentId(commentaire.getId());
+                    mention.setType(NotificationType.MENTION_COMMENT);
+    
+                    notificationRepository.save(mention);
+                }
+            }
+        }
 
         user.getCommentaires()
             .add(commentaire);
@@ -196,6 +257,19 @@ public class UserService {
 
         Commentaire commentaire = commentaireRepository.findById(id_commentaire)
                                                        .orElseThrow(EntityNotFoundException::new);
+
+        //Déclenche une notification au propriétaire du commentaire
+        if(id_user != commentaire.getUser().getIdUser()){
+            Notification notification = new Notification();
+
+            notification.setTriggerId(id_user);
+            notification.setType(NotificationType.REACTION_COMMENT);
+            notification.setReceiverId(commentaire.getUser().getIdUser());
+            notification.setContentId(id_commentaire);
+            notification.setRead(false);
+
+            notificationRepository.save(notification);
+        }
 
         reaction.setUser(user);
         reaction.setCommentaire(commentaire);
@@ -247,15 +321,6 @@ public class UserService {
     }
 
     //Friend Request
-
-    //Indique si une demande a déjà été envoyé
-    private boolean hasReceivedFriendRequest(User receiver, User sender) {
-        for (FriendRequest receivedRequest : receiver.getReceivedFriendRequests()) 
-            if (receivedRequest.getSender().equals(sender)) return true;
-        
-        return false;
-    }
-
     public FriendRequest sendFriendRequest(long id_sender,long id_receiver,FriendRequest request) throws EntityNotFoundException,IllegalArgumentException{ 
         User sender = userRepository.findById(id_sender)
                                     .orElseThrow(EntityNotFoundException::new);
@@ -325,6 +390,7 @@ public class UserService {
     public void addFriend(long id_sender,long id_receiver) throws EntityNotFoundException{
         FriendRequest request = requestRepository.findBySender_IdUserAndReceiver_IdUser(id_sender, id_receiver)
                                                  .orElseThrow(EntityNotFoundException::new);
+        Notification notification = new Notification();
 
         //Lorsque la demande est accepté par le destinataire, l'expediteur et le destinataire de la demande sont amis
         request.getReceiver()
@@ -335,6 +401,14 @@ public class UserService {
                .getFriends()
                .add(request.getReceiver());
         
+        //Declenche une notification à l'envoyeur de la demande 
+        notification.setTriggerId(id_receiver);
+        notification.setType(NotificationType.FRIEND_REQUEST_ACCEPTED);
+        notification.setReceiverId(id_sender);
+        notification.setContentId(id_receiver);
+        notification.setRead(false);
+
+        notificationRepository.save(notification);
         userRepository.save(request.getReceiver());
         userRepository.save(request.getSender());
 
